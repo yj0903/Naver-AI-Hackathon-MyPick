@@ -187,18 +187,13 @@ def main(args):
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
 
-    # save text file
-    # file = open('_time_data.txt', 'w')
-    # _str_time = str(_time)
-    # file.write(_str_time)
-    # file.close()
-
     # video editing
     project_root_path = os.path.join(os.path.abspath(__file__), "..\\..") + "test_Data\\video\\test.mp4"
     for i in range(4):
-        pick_people(i, _time)
-        allthetime = extract_timedata(_time)
+        time_data1 = [_time[i]]
+        allthetime = extract_timedata(time_data1)
         assemble_cuts(project_root_path, allthetime, "final" + str(i) + ".mp4")
+
 
     video_recording.release()
     video_capture.release()
@@ -208,6 +203,6 @@ if __name__ == "__main__":
     args = lambda : None
     args.video = True
     args.youtube_video_url = "https://www.youtube.com/watch?v=l3ORhQaMUR4"
-    args.video_speedup = 1
+    args.video_speedup = 30
     args.webcam = False
     main(args)
