@@ -4,7 +4,7 @@ import extract_time
 
 def pick_people (mypick, timelist):
     # mypick! 멤버를 고른다.
-    people_list = {'jennie': 0, 'jisoo': 1, 'lisa': 2, 'rose': 3}
+    people_list = {0: 'jennie', 1: 'jisoo', 2: 'lisa', 3: 'rose'}
     pick = people_list[mypick]
     time_data1 = [timelist[pick]]
 
