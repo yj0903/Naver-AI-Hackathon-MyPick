@@ -3,6 +3,9 @@ import align.detect_face
 import facenet
 import cv2
 import numpy as np
+from color_extractor import _colorExtractor
+from pose_estimation import _poseEstimation
+
 import glob
 import pickle
 import collections
@@ -16,6 +19,11 @@ def main(args):
     factor = 0.709
     image_size = 182
     input_image_size = 160
+
+    #Jennie, Jisoo, Lisa, Rose
+    color = [(0, 1, 2), (0, 1, 1), (1, 0, 3), (1, 1, 3)]
+
+    _time = [[], [], [], []]
 
     # comment out these lines if you do not want video recording
     # USE FOR RECORDING VIDEO
@@ -74,7 +82,8 @@ def main(args):
                     ret, frame = video_capture.read()
                 except Exception as e:
                     break
-                # Skip frames if video is to be sped up
+
+                # Skip frames if video is to be speed up
                 if args.video_speedup:
                     total_frames_passed += 1
                     if total_frames_passed % args.video_speedup != 0:
@@ -89,13 +98,19 @@ def main(args):
                 duration = video_capture.get(cv2.CAP_PROP_POS_MSEC)
                 msecs = int(duration % 1000) /1000
                 seconds = int(duration / 1000 % 60)
-                minutes = int(seconds / 60)
-                hour = int(minutes / 60)
+                minutes = int(duration / 1000 /1000 % 60)
+                hour =  int(duration / 1000 /1000 / 60)
                 time = '{0}:{1}:{2}'.format(hour, minutes, seconds + msecs)
                 information_list.append(time)
 
                 if faces_found > 0:
                     det = bounding_boxes[:, 0:4]
+	
+                    # save .jpg
+                    success, image = video_capture.read()
+                    if success is False:
+                        break
+                    cv2.imwrite('frame.jpg', image)
 
                     bb = np.zeros((faces_found, 4), dtype=np.int32)
                     for i in range(faces_found):
@@ -113,6 +128,7 @@ def main(args):
                         scaled = cv2.resize(cropped, (input_image_size, input_image_size), interpolation=cv2.INTER_CUBIC)
                         # cv2.imshow("Cropped and scaled", scaled)
                         # cv2.waitKey(1)
+
                         scaled = facenet.prewhiten(scaled)
                         # cv2.imshow("\"Whitened\"", scaled)
                         # cv2.waitKey(1)
@@ -124,8 +140,17 @@ def main(args):
                         best_class_indices = np.argmax(predictions, axis=1)
                         best_class_probabilities = predictions[np.arange(len(best_class_indices)), best_class_indices]
                         best_name = class_names[best_class_indices[0]]
-                        # print("Name: {}, Probability: {}".format(best_name, best_class_probabilities))
-                        # print("best_name ", best_name, best_class_indices)
+
+                        _isPerson = 0
+                        (s_x, s_y) = _poseEstimation('frame.jpg', det[i][0], det[i][2], det[i][1], det[i][3])
+                        if (s_x, s_y) != (-1, -1):
+                            temp = _colorExtractor('frame.jpg', s_x, s_y)
+                            if color[best_class_indices[0]] == temp:
+                                _isPerson = 1
+
+                        _time[best_class_indices[0]].append((time,_isPerson))
+                        print((time,_isPerson))
+
                         information_list.append(best_name)
 
                         if best_class_probabilities > 0.09:
@@ -159,6 +184,12 @@ def main(args):
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
 
+    # save text file
+    file = open('_time_data.txt', 'w')
+    _str_time = str(_time)
+    file.write(_str_time)
+    file.close()
+
     video_recording.release()
     video_capture.release()
     cv2.destroyAllWindows()
@@ -167,6 +198,6 @@ if __name__ == "__main__":
     args = lambda : None
     args.video = True
     args.youtube_video_url = "https://www.youtube.com/watch?v=l3ORhQaMUR4"
-    args.video_speedup = 10
+    args.video_speedup = 60
     args.webcam = False
     main(args)
