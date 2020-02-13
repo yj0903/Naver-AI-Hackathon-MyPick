@@ -10,6 +10,8 @@ import os
 from pytube import YouTube
 # import ffmpeg
 
+from color_extractor import _color_Extractor
+
 def main(args):
     minsize = 20
     threshold = [0.6, 0.7, 0.7]
