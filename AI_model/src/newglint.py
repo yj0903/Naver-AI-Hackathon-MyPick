@@ -10,8 +10,6 @@ import os
 from pytube import YouTube
 # import ffmpeg
 
-from color_extractor import _color_Extractor
-
 def main(args):
     minsize = 20
     threshold = [0.6, 0.7, 0.7]
@@ -48,6 +46,7 @@ def main(args):
 
             # Start video capture
             people_detected = set()
+            information_list = [] # idol member's appearance time
 
             person_detected = collections.Counter()
 
@@ -75,15 +74,25 @@ def main(args):
                     ret, frame = video_capture.read()
                 except Exception as e:
                     break
-
                 # Skip frames if video is to be sped up
                 if args.video_speedup:
                     total_frames_passed += 1
                     if total_frames_passed % args.video_speedup != 0:
                         continue
 
+                # extract bb
                 bounding_boxes, _ = align.detect_face.detect_face(frame, minsize, pnet, rnet, onet, threshold, factor)
                 faces_found = bounding_boxes.shape[0]
+
+                # time & name
+                information_list.clear()
+                duration = video_capture.get(cv2.CAP_PROP_POS_MSEC)
+                msecs = int(duration % 1000) /1000
+                seconds = int(duration / 1000 % 60)
+                minutes = int(seconds / 60)
+                hour = int(minutes / 60)
+                time = '{0}:{1}:{2}'.format(hour, minutes, seconds + msecs)
+                information_list.append(time)
 
                 if faces_found > 0:
                     det = bounding_boxes[:, 0:4]
@@ -115,7 +124,9 @@ def main(args):
                         best_class_indices = np.argmax(predictions, axis=1)
                         best_class_probabilities = predictions[np.arange(len(best_class_indices)), best_class_indices]
                         best_name = class_names[best_class_indices[0]]
-                        print("Name: {}, Probability: {}".format(best_name, best_class_probabilities))
+                        # print("Name: {}, Probability: {}".format(best_name, best_class_probabilities))
+                        # print("best_name ", best_name, best_class_indices)
+                        information_list.append(best_name)
 
                         if best_class_probabilities > 0.09:
                             cv2.rectangle(frame, (bb[i][0], bb[i][1]), (bb[i][2], bb[i][3]), (0, 255, 0), 2)    #boxing face
@@ -129,11 +140,13 @@ def main(args):
                     # if total_frames_passed == 2:
                     for person, count in person_detected.items():
                         if count > 4:
-                            print("Person Detected: {}, Count: {}".format(person, count))
+                            # print("Person Detected: {}, Count: {}".format(person, count))
                             people_detected.add(person)
                     # person_detected.clear()
                     # total_frames_passed = 0
 
+                # print time & name
+                print(information_list)
 
                 cv2.putText(frame, "People detected so far:", (20, 20), cv2.FONT_HERSHEY_PLAIN,
                             1, (255, 0, 0), thickness=1, lineType=2)
@@ -145,6 +158,7 @@ def main(args):
                 video_recording.write(frame)
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
+
     video_recording.release()
     video_capture.release()
     cv2.destroyAllWindows()
@@ -153,6 +167,6 @@ if __name__ == "__main__":
     args = lambda : None
     args.video = True
     args.youtube_video_url = "https://www.youtube.com/watch?v=l3ORhQaMUR4"
-    args.video_speedup = 5
+    args.video_speedup = 10
     args.webcam = False
     main(args)
