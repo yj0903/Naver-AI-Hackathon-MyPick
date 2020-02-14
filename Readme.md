@@ -23,3 +23,7 @@
 6. test
 <비디오로 test실행>
 >> python ./src/newglint.py
+
++++++++++++++
+React Native 사용
+ios, android 모두 호환 가능한 크로스 플랫폼으로 ios 기준으로 개발
