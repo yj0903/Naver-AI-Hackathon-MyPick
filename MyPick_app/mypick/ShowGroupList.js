@@ -31,27 +31,27 @@ import { Video } from 'expo-av';
 const DATA = {
   'blackpink': {
     id: 'blackpink',
-    title: '3주년',
+    title: '3주년💕',
     date: 'Feb 14, 2020',
     profile_img:
       'https://d1yjjnpx0p53s8.cloudfront.net/styles/logo-thumbnail/s3/052017/untitled-1_9.png?itok=3xjaxvLi',
     contents_url: 'https://i.imgur.com/jlErwF7.png',
     members: [
       {
-        name: 'Jennie',
-        video_url: 'http://d23dyxeqlo5psv.cloudfront.net/big_buck_bunny.mp4',
+        name: 'Jennie ONLY!💗',
+        video_url: 'https://i.imgur.com/AtHbJeC.mp4',
       },
       {
-        name: 'Lisa',
-        video_url: 'https://i.imgur.com/PJ0obHg.mp4',
+        name: 'Lisa ONLY!💝',
+        video_url: 'https://i.imgur.com/M0L50cE.mp4',
       },
       {
-        name: 'Jisoo',
-        video_url: '',
+        name: 'Jisoo ONLY!💛',
+        video_url: 'https://i.imgur.com/59SdtNp.mp4',
       },
       {
-        name: 'Rose',
-        video_url: '',
+        name: 'Rose ONLY!❣',
+        video_url: 'https://i.imgur.com/An4OpsO.mp4',
       },
     ],
   },
@@ -63,10 +63,10 @@ const DATA = {
     contents_url:
       'https://i.pinimg.com/564x/2b/98/d8/2b98d826e278f203867a2277abc23850.jpg',
     members: [
-      { name: '김정미', video_url: '' },
-      { name: '김하영', video_url: '' },
-      { name: '이진주', video_url: '' },
-      { name: '채유진', video_url: '' },
+      { name: 'Jeong mee ONLY!🎧', video_url: '' },
+      { name: 'Ha Yeong ONLY!🎉', video_url: '' },
+      { name: 'Jin Joo ONLY!🎀', video_url: '' },
+      { name: 'Yu Jin ONLY!👑', video_url: '' },
     ],
   },
 };
@@ -87,7 +87,7 @@ class ShowGroupList extends Component {
             </TouchableOpacity>
           </Left>
           <Body>
-            <Title>My pick!</Title>
+            <Title>My Pick!</Title>
           </Body>
           <Right/>
         </Header>
@@ -99,7 +99,7 @@ class ShowGroupList extends Component {
               }}
             />
             <Body>
-              <Text>{DATA[group_name].title}</Text>
+              <Text style={styles.title}>{DATA[group_name].title}</Text>
               <Text note>{DATA[group_name].date}</Text>
             </Body>
           </Left>
@@ -125,7 +125,7 @@ class ShowGroupList extends Component {
                         video_url: item.video_url,
                       })
                     }>
-                    <Text>{item.name}</Text>
+                    <Text style={styles.title}>{item.name}</Text>
                   </TouchableOpacity>
                 </View>
               )}
@@ -141,9 +141,13 @@ class ShowGroupList extends Component {
 const styles = StyleSheet.create({
   button: {
     alignItems: 'center',
-    width: '100%',
-    backgroundColor: '#dddddd',
+    width: '95%',
+    backgroundColor: '#fbd9c8',
     padding: 10,
+    borderRadius: 10,
+  },
+  title: {
+    fontWeight: 'bold'
   },
   container: {
     paddingTop: 10,
