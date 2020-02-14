@@ -1,7 +1,7 @@
 def rgb_to_hsv(r, g, b):
 	
   #extract min, max
-  r, g, b = r/255, g/255, b/255
+	r, g, b = r/255, g/255, b/255
 	mx = max(r, g, b)
 	mn = min(r, g, b)
 
@@ -9,7 +9,7 @@ def rgb_to_hsv(r, g, b):
 	df = mx-mn
 	
   #convert rgb to hsv channel
-  if mx == mn:
+	if mx == mn:
 		h = 0
 	elif mx == r:
 		h = (60 * ((g-b)/df) + 360) % 360

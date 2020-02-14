@@ -12,7 +12,7 @@ if __name__ == '__main__':
     args.data_dir = project_root_path + '\\training_data_aligned'
     args.seed = None
     args.use_split_dataset = False
-    args.model = project_root_path + '\\facenet_model\\20170512-110547\\20170512-110547.pb'
+    args.model = project_root_path + '\\facenet_model\\20180402-114759\\20180402-114759.pb'
     args.mode = 'CLASSIFY'
     args.batch_size = 460
     args.image_size = 160

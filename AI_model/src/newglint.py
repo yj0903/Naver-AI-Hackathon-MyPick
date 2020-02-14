@@ -3,6 +3,12 @@ import align.detect_face
 import facenet
 import cv2
 import numpy as np
+from color_extractor import _colorExtractor
+from pose_estimation import _poseEstimation
+from extract_time import extract_timedata
+from videofile_trim import assemble_cuts
+from moviepy.editor import VideoFileClip
+
 import glob
 import pickle
 import collections
@@ -10,14 +16,17 @@ import os
 from pytube import YouTube
 # import ffmpeg
 
-from color_extractor import _color_Extractor
-
 def main(args):
     minsize = 20
     threshold = [0.6, 0.7, 0.7]
     factor = 0.709
     image_size = 182
     input_image_size = 160
+
+    #Jennie, Jisoo, Lisa, Rose
+    color = [(0, 1, 2), (0, 1, 1), (1, 0, 3), (1, 1, 3)]
+
+    _time = [[], [], [], []]
 
     # comment out these lines if you do not want video recording
     # USE FOR RECORDING VIDEO
@@ -48,6 +57,7 @@ def main(args):
 
             # Start video capture
             people_detected = set()
+            information_list = [] # idol member's appearance time
 
             person_detected = collections.Counter()
 
@@ -76,17 +86,34 @@ def main(args):
                 except Exception as e:
                     break
 
-                # Skip frames if video is to be sped up
+                # Skip frames if video is to be speed up
                 if args.video_speedup:
                     total_frames_passed += 1
                     if total_frames_passed % args.video_speedup != 0:
                         continue
 
+                # extract bb
                 bounding_boxes, _ = align.detect_face.detect_face(frame, minsize, pnet, rnet, onet, threshold, factor)
                 faces_found = bounding_boxes.shape[0]
 
+                # time & name
+                information_list.clear()
+                duration = video_capture.get(cv2.CAP_PROP_POS_MSEC)
+                msecs = int(duration % 1000) /1000
+                seconds = int(duration / 1000 % 60)
+                minutes = int(duration / 1000 /1000 % 60)
+                hour =  int(duration / 1000 /1000 / 60)
+                time = '{0}:{1}:{2}'.format(hour, minutes, seconds + msecs)
+                information_list.append(time)
+
                 if faces_found > 0:
                     det = bounding_boxes[:, 0:4]
+	
+                    # save .jpg
+                    success, image = video_capture.read()
+                    if success is False:
+                        break
+                    cv2.imwrite('frame.jpg', image)
 
                     bb = np.zeros((faces_found, 4), dtype=np.int32)
                     for i in range(faces_found):
@@ -104,6 +131,7 @@ def main(args):
                         scaled = cv2.resize(cropped, (input_image_size, input_image_size), interpolation=cv2.INTER_CUBIC)
                         # cv2.imshow("Cropped and scaled", scaled)
                         # cv2.waitKey(1)
+
                         scaled = facenet.prewhiten(scaled)
                         # cv2.imshow("\"Whitened\"", scaled)
                         # cv2.waitKey(1)
@@ -115,7 +143,18 @@ def main(args):
                         best_class_indices = np.argmax(predictions, axis=1)
                         best_class_probabilities = predictions[np.arange(len(best_class_indices)), best_class_indices]
                         best_name = class_names[best_class_indices[0]]
-                        print("Name: {}, Probability: {}".format(best_name, best_class_probabilities))
+
+                        _isPerson = 0
+                        (s_x, s_y) = _poseEstimation('frame.jpg', det[i][0], det[i][2], det[i][1], det[i][3])
+                        if (s_x, s_y) != (-1, -1):
+                            temp = _colorExtractor('frame.jpg', s_x, s_y)
+                            if color[best_class_indices[0]] == temp:
+                                _isPerson = 1
+
+                        _time[best_class_indices[0]].append((time,_isPerson))
+                        print((time,_isPerson))
+
+                        information_list.append(best_name)
 
                         if best_class_probabilities > 0.09:
                             cv2.rectangle(frame, (bb[i][0], bb[i][1]), (bb[i][2], bb[i][3]), (0, 255, 0), 2)    #boxing face
@@ -129,11 +168,13 @@ def main(args):
                     # if total_frames_passed == 2:
                     for person, count in person_detected.items():
                         if count > 4:
-                            print("Person Detected: {}, Count: {}".format(person, count))
+                            # print("Person Detected: {}, Count: {}".format(person, count))
                             people_detected.add(person)
                     # person_detected.clear()
                     # total_frames_passed = 0
 
+                # print time & name
+                print(information_list)
 
                 cv2.putText(frame, "People detected so far:", (20, 20), cv2.FONT_HERSHEY_PLAIN,
                             1, (255, 0, 0), thickness=1, lineType=2)
@@ -145,6 +186,15 @@ def main(args):
                 video_recording.write(frame)
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
+
+    # video editing
+    project_root_path = os.path.join(os.path.abspath(__file__), "..\\..") + "test_Data\\video\\test.mp4"
+    for i in range(4):
+        time_data1 = [_time[i]]
+        allthetime = extract_timedata(time_data1)
+        assemble_cuts(project_root_path, allthetime, "final" + str(i) + ".mp4")
+
+
     video_recording.release()
     video_capture.release()
     cv2.destroyAllWindows()
@@ -153,6 +203,6 @@ if __name__ == "__main__":
     args = lambda : None
     args.video = True
     args.youtube_video_url = "https://www.youtube.com/watch?v=l3ORhQaMUR4"
-    args.video_speedup = 5
+    args.video_speedup = 30
     args.webcam = False
     main(args)
