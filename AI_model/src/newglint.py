@@ -108,7 +108,7 @@ def main(args):
 
                 if faces_found > 0:
                     det = bounding_boxes[:, 0:4]
-	
+
                     # save .jpg
                     success, image = video_capture.read()
                     if success is False:
@@ -144,12 +144,17 @@ def main(args):
                         best_class_probabilities = predictions[np.arange(len(best_class_indices)), best_class_indices]
                         best_name = class_names[best_class_indices[0]]
 
+                        # probability
                         _isPerson = 0
-                        (s_x, s_y) = _poseEstimation('frame.jpg', det[i][0], det[i][2], det[i][1], det[i][3])
-                        if (s_x, s_y) != (-1, -1):
-                            temp = _colorExtractor('frame.jpg', s_x, s_y)
-                            if color[best_class_indices[0]] == temp:
-                                _isPerson = 1
+                        # # extract shoulder x, y
+                        if best_class_probabilities <= 0.5:
+                            (s_x, s_y) = _poseEstimation('frame.jpg', det[i][0], det[i][2], det[i][1], det[i][3])
+                            if (s_x, s_y) != (-1, -1):
+                                temp = _colorhist('frame.jpg', s_x, s_y)
+                                if color[best_class_indices[0]] == temp:
+                                    _isPerson = 1
+                        else:
+                            _isPerson = 1
 
                         _time[best_class_indices[0]].append((time,_isPerson))
                         print((time,_isPerson))
