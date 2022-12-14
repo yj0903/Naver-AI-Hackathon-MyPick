@@ -1,4 +1,7 @@
-1. 참고 깃허브(더 자세한 설명 있음): https://github.com/radykov/facial-recognition-video-facenet
+1. naver ai hackathon "Mypick"
+>> 얼굴 인식 ai facenet 모델 이용
+>> 다수의 사람이 등장하는 동영상에서 특정 인물이 등장하는 장면만 편집하여 짧은 영상을 제공하는 서비스
+
 
 2. 환경설정
 >> conda activate tensor1.2
